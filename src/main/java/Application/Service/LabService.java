@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -22,14 +23,18 @@ import java.util.zip.ZipOutputStream;
 
 @Service
 public class LabService {
-    @Autowired
     CMDService cmdService;
-    @Autowired
     LabCanonicalRepository labCanonicalRepository;
-    @Autowired
     LabSavedRepository labSavedRepository;
-    @Autowired
     AuthService authService;
+    @Autowired
+    public LabService(CMDService cmdService, LabCanonicalRepository labCanonicalRepository,
+                      LabSavedRepository labSavedRepository, AuthService authService){
+        this.cmdService = cmdService;
+        this.labCanonicalRepository = labCanonicalRepository;
+        this.labSavedRepository = labSavedRepository;
+        this.authService = authService;
+    }
     public LabCanonical getCanonicalLab(long pkey, String name) throws UnauthorizedException, LabRetrievalException, LabZipException, IOException, InterruptedException {
         if(!authService.validateUser(pkey)){
             throw new UnauthorizedException();
@@ -62,15 +67,65 @@ public class LabService {
             return labSaved;
         }
     }
+
+    /**
+     * ungodly exception handling. dont look i had 30 minutes to fix this before my flight
+     * @param name
+     * @return
+     * @throws LabZipException
+     * @throws IOException
+     * @throws InterruptedException
+     */
     public LabCanonical addNewCanonicalLab(String name) throws LabZipException, IOException, InterruptedException {
-        File zipfile = generateCanonicalLabZip(name);
+
+        File zipfile = null;
+        try{
+            zipfile = generateCanonicalLabZip("https://github.com/exa-coding-labs/",name);
+        }catch (IOException e){
+            try{
+                zipfile = generateCanonicalLabZip("https://github.com/peplabs/",name);
+            }catch (IOException e2){
+                try{
+                    zipfile = generateCanonicalLabZip("https://github.com/tedbeast/",name);
+                }catch (IOException e3){
+                    zipfile = new File(name+".zip");
+                    zipfile.delete();
+                    throw new RuntimeException("gave up trying to clone the lab dont make a zipfile!");
+                }
+
+            }
+        }
         byte[] zipBytes = Files.readAllBytes(Path.of(zipfile.getPath()));
         LabCanonical labCanonical = new LabCanonical(name, zipBytes, new Timestamp(System.currentTimeMillis()));
-        zipfile.delete();
         return labCanonicalRepository.save(labCanonical);
     }
+
+    /**
+     * i repeated myself because i'm a BAD coder and now my flight's in 15 minutes!
+     * @param name
+     * @return
+     * @throws LabZipException
+     * @throws IOException
+     * @throws InterruptedException
+     */
     public LabCanonical updateExistingCanonicalLabZip(String name) throws LabZipException, IOException, InterruptedException {
-        File zipfile = generateCanonicalLabZip(name);
+        File zipfile = null;
+        try{
+            zipfile = generateCanonicalLabZip("https://github.com/exa-coding-labs/",name);
+        }catch (IOException e){
+            try{
+                zipfile = generateCanonicalLabZip("https://github.com/peplabs/",name);
+            }catch (IOException e2){
+                try{
+                    zipfile = generateCanonicalLabZip("https://github.com/tedbeast/",name);
+                }catch (IOException e3){
+                    zipfile = new File(name+".zip");
+                    zipfile.delete();
+                    throw new RuntimeException("gave up trying to clone the lab dont make a zipfile!");
+                }
+
+            }
+        }
         LabCanonical labCanonical = labCanonicalRepository.findByName(name);
         byte[] zipBytes = Files.readAllBytes(Path.of(zipfile.getPath()));
         labCanonical.setZip(zipBytes);
@@ -78,11 +133,21 @@ public class LabService {
         zipfile.delete();
         return labCanonicalRepository.save(labCanonical);
     }
+
+    /**
+     * TODO check for the existence of the repo
+     * @return
+     */
     public boolean checkForCanonicalLabExistenceRepo(){
         return true;
     }
+    /**
+     * TODO
+     * for now, just update the lab every dang time.
+     * @return
+     */
     public boolean checkForCanonicalLabUpdate(){
-        return false;
+        return true;
     }
     public LabSaved addNewSavedLab(long pkey, String name) throws LabZipException, IOException, InterruptedException {
         LabCanonical labCanonical = labCanonicalRepository.findByName(name);
@@ -95,14 +160,27 @@ public class LabService {
         labSaved.setCanonical(labCanonical);
         return labSavedRepository.save(labSaved);
     }
-    public LabSaved updateExistingSavedLabZip(){
+
+    /**
+     * TODO: provided the pkey
+     * @return
+     */
+    public LabSaved resetLabProgress(long pkey, String name){
         return null;
     }
-    public File generateCanonicalLabZip(String name) throws IOException, InterruptedException, LabZipException {
+    /**
+     * TODO: provided the zip file bytes of an existing lab, update the lab zip stored in the db with respoect
+     * to the provided pkey
+     * @return
+     */
+    public LabSaved saveLabProgress(long pkey, String name, byte[] zip){
+        return null;
+    }
+    public File generateCanonicalLabZip(String ghorgPrefix, String name) throws IOException, InterruptedException, LabZipException {
         if(name == null || name.length()<1){
             throw new LabZipException();
         }
-        cmdService.runCommandReturnOutput("git clone https://github.com/tedbeast/"+name);
+        cmdService.runCommandReturnOutput("git clone "+ghorgPrefix+name);
         pack("./"+name, "./"+name+".zip");
         File dir = new File("./"+name);
         deleteDirectory(dir);

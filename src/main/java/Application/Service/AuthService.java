@@ -13,6 +13,7 @@ public class AuthService {
     ProductKeyRepository productKeyRepository;
 
     public boolean validateUser(long pkey){
+
         Optional<ProductKey> productKey = productKeyRepository.findById(pkey);
         if(productKey.isPresent()){
             return productKey.get().isActive();

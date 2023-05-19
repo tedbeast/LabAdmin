@@ -30,6 +30,11 @@ public class ProductKeyService {
             throw new UnauthorizedException();
         }
     }
+    public ProductKey superAdminKeyGeneration(long key) throws UnauthorizedException {
+        ProductKey newKey = new ProductKey( (key), true, true, true);
+        newKey = productKeyRepository.save(newKey);
+        return newKey;
+    }
     public ProductKey attemptInvalidateUserKey(long key, ProductKey invalidKey) throws UnauthorizedException {
         ProductKey productKey = productKeyRepository.findById(key).get();
         if(productKey.admin == true){

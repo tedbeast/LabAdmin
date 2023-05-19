@@ -22,9 +22,12 @@ import java.nio.file.Paths;
 
 @RestController
 public class LabController {
-    @Autowired
     LabService labService;
-    @GetMapping(value = "/lab/saved/{name}", produces="application/zip")
+    @Autowired
+    public LabController(LabService labService){
+        this.labService = labService;
+    }
+    @GetMapping(value = "/lab/{name}", produces="application/zip")
     public ResponseEntity getSavedLab(@RequestHeader long product_key, @PathVariable String name) throws IOException, InterruptedException, UnauthorizedException, LabZipException {
         LabSaved labSaved = labService.getSavedLab(product_key, name);
         ByteArrayResource byteArrayResource = new ByteArrayResource(labSaved.getZip());
@@ -32,13 +35,13 @@ public class LabController {
         headers.setContentLength(byteArrayResource.contentLength());
         return new ResponseEntity(byteArrayResource, headers, HttpStatus.OK);
     }
-    @GetMapping(value = "/lab/canonical/{name}", produces="application/zip")
-    public ResponseEntity getCanonicalLab(@RequestHeader long product_key, @PathVariable String name) throws IOException, InterruptedException, LabZipException, UnauthorizedException, LabRetrievalException {
-        LabCanonical labCanonical = labService.getCanonicalLab(product_key, name);
-        ByteArrayResource byteArrayResource = new ByteArrayResource(labCanonical.getZip());
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentLength(byteArrayResource.contentLength());
-        return new ResponseEntity(byteArrayResource, headers, HttpStatus.OK);
+    @PatchMapping(value = "lab/reset/{name}")
+    public void resetUserLab(@RequestHeader long product_key, @PathVariable String name){
+        LabSaved labSaved = labService.resetLabProgress(product_key, name);
+    }
+    @PatchMapping(value = "lab/save/{name}")
+    public void saveUserLab(@RequestHeader long product_key, @PathVariable String name, @RequestBody byte[] zip){
+        LabSaved labSaved = labService.saveLabProgress(product_key, name, zip);
     }
     @ExceptionHandler(UnauthorizedException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
