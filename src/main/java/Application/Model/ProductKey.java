@@ -11,6 +11,9 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import java.util.List;
 
+/**
+ * Entity represents an active user on the site
+ */
 @Entity
 @ToString
 @Data
@@ -22,6 +25,10 @@ public class ProductKey {
     public boolean active;
     public boolean admin;
     public boolean superAdmin;
+//    might use this later
+    public String name;
+//    might develop some way to give a productkey access only to some lab canonicals, or assgn canonicals
+//    to a unit and provide access to a unit.
 
     public ProductKey(long productKey, boolean active, boolean admin, boolean superAdmin) {
         this.productKey = productKey;

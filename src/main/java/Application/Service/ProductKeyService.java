@@ -8,6 +8,9 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class ProductKeyService {
+    /**
+     * create a new user product key
+     */
     @Autowired
     ProductKeyRepository productKeyRepository;
     public ProductKey attemptUserKeyGeneration(long key) throws UnauthorizedException {
@@ -20,6 +23,10 @@ public class ProductKeyService {
             throw new UnauthorizedException();
         }
     }
+
+    /**
+     * create a new admin key
+     */
     public ProductKey attemptAdminKeyGeneration(long key) throws UnauthorizedException {
         ProductKey productKey = productKeyRepository.findById(key).get();
         if(productKey.superAdmin == true){
@@ -30,11 +37,19 @@ public class ProductKeyService {
             throw new UnauthorizedException();
         }
     }
+
+    /**
+     * create a new superadmin
+     */
     public ProductKey superAdminKeyGeneration(long key) throws UnauthorizedException {
         ProductKey newKey = new ProductKey( (key), true, true, true);
         newKey = productKeyRepository.save(newKey);
         return newKey;
     }
+
+    /**
+     * invalidate a user key
+     */
     public ProductKey attemptInvalidateUserKey(long key, ProductKey invalidKey) throws UnauthorizedException {
         ProductKey productKey = productKeyRepository.findById(key).get();
         if(productKey.admin == true){
@@ -46,6 +61,10 @@ public class ProductKeyService {
             throw new UnauthorizedException();
         }
     }
+
+    /**
+     * invalidate an admin key
+     */
     public ProductKey attemptInvalidateAdminKey(long key, ProductKey invalidKey) throws UnauthorizedException {
         ProductKey productKey = productKeyRepository.findById(key).get();
         if(productKey.superAdmin == true){
@@ -57,4 +76,8 @@ public class ProductKeyService {
             throw new UnauthorizedException();
         }
     }
+    public ProductKey getProductKey(long pkey){
+        return productKeyRepository.findById(pkey).get();
+    }
+
 }

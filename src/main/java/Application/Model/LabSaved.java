@@ -6,6 +6,9 @@ import javax.persistence.*;
 import java.io.File;
 import java.sql.Timestamp;
 
+/**
+ * Entity represents the saved state of a user's lab
+ */
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor

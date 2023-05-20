@@ -10,19 +10,19 @@ import org.springframework.web.bind.annotation.*;
 public class AdminController {
     @Autowired
     public ProductKeyService productKeyService;
-    @GetMapping
+    @GetMapping("key/new/user")
     public ProductKey genNewUserKey(@RequestHeader long product_key) throws UnauthorizedException {
         return productKeyService.attemptUserKeyGeneration(product_key);
     }
-    @GetMapping
+    @GetMapping("key/new/admin")
     public ProductKey genNewAdminKey(@RequestHeader long product_key) throws UnauthorizedException {
         return productKeyService.attemptAdminKeyGeneration(product_key);
     }
-    @PatchMapping
+    @PatchMapping("key/invalidate/user")
     public ProductKey invalidateUserKey(@RequestHeader long product_key, @RequestBody ProductKey productKey) throws UnauthorizedException{
         return productKeyService.attemptInvalidateUserKey(product_key, productKey);
     }
-    @PatchMapping
+    @PatchMapping("key/invalidate/admin")
     public ProductKey invalidateAdminKey(@RequestHeader long product_key, @RequestBody ProductKey productKey) throws UnauthorizedException{
         return productKeyService.attemptInvalidateAdminKey(product_key, productKey);
     }

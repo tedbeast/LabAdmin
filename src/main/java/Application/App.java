@@ -9,13 +9,13 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 
 @SpringBootApplication
-public class Application {
+public class App {
     /**
      * Logger setup
      */
     public static Logger log = LogManager.getLogger();
     public static void main(String[] args) throws UnauthorizedException {
-        ApplicationContext appContext = SpringApplication.run(Application.class);
+        ApplicationContext appContext = SpringApplication.run(App.class);
         /**
          * just for testing!! remove this later!!
          */

@@ -6,6 +6,9 @@ import javax.persistence.*;
 import java.io.File;
 import java.sql.Timestamp;
 
+/**
+ * Entity represents the official "starting point" of a lab written by trainers and stored in a github repository
+ */
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
