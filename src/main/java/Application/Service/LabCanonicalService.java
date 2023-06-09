@@ -1,10 +1,12 @@
 package Application.Service;
 
+import Application.App;
 import Application.Exception.LabRetrievalException;
 import Application.Exception.LabZipException;
 import Application.Exception.UnauthorizedException;
 import Application.Model.LabCanonical;
 import Application.Repository.LabCanonicalRepository;
+import Application.Util.WebUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -31,7 +33,7 @@ public class LabCanonicalService {
     }
 
     /**
-     * check for lab updates or brand new labs prior to returning the canonical
+     * check for brand new labs or lab updates prior to returning the canonical
      * @param name
      * @return
      * @throws LabRetrievalException
@@ -40,111 +42,147 @@ public class LabCanonicalService {
      * @throws InterruptedException
      */
     public LabCanonical getCanonicalLab(String name) throws LabRetrievalException, LabZipException, IOException, InterruptedException {
-
+        if(name == null || name.length() < 2){
+            App.log.info("malformed lab name: "+name);
+            throw new LabRetrievalException();
+        }
         LabCanonical lab = labCanonicalRepository.findByName(name);
+        String[] tuple = getLatestCanonicalCommit(name);
+        if(tuple == null){
+            App.log.info("no such lab found: "+name);
+            throw new LabRetrievalException();
+        }
+        String commit = tuple[0];
+        String source = WebUtil.baseUrl[Integer.parseInt(tuple[1])];
         if(lab == null){
-            if(checkForCanonicalLabExistenceRepo()){
-                lab = addNewCanonicalLab(name);
+            if(commit!=null){
+                App.log.info("adding as a new canonical: "+name+", "+commit+", "+source);
+                lab = addNewCanonicalLab(name, commit, source);
                 return lab;
             }else{
+                App.log.warn("commit hash null or malformed: "+name+", "+commit+", "+source);
                 throw new LabRetrievalException();
             }
         }else{
-            if(checkForCanonicalLabUpdate()) {
-                lab = updateExistingCanonicalLabZip(name);
+            if(checkForCanonicalLabUpdate(lab, commit)) {
+                App.log.info("updating canonical: "+name+", "+commit+", "+source);
+                lab = updateExistingCanonicalLabZip(name, commit, source);
                 return lab;
             }else{
+                App.log.info("loading canonical: "+name+", "+commit+"/"+lab.getCommit()+", "+source);
                 return lab;
             }
         }
     }
 
     /**
-     * ungodly exception handling. dont look i had 30 minutes to fix this before my flight
+     * take the git repo from the web, if there are no issues create the zip
      * @param name
+     * @param source
      * @return
-     * @throws LabZipException
-     * @throws IOException
      * @throws InterruptedException
+     * @throws LabZipException
      */
-    public LabCanonical addNewCanonicalLab(String name) throws LabZipException, IOException, InterruptedException {
-
-        File zipfile = null;
+    public File getZipFromWeb(String name, String source) throws InterruptedException, LabZipException {
+        File zipfile;
         try{
-            zipfile = generateCanonicalLabZip("https://github.com/peplabs/",name);
+            zipfile = generateCanonicalLabZip(source, name);
+        }catch (LabZipException e){
+//            ensure that no artifacts remain when an issue occurs
+            zipfile = new File(name+".zip");
+            zipfile.delete();
+            App.log.warn("an issue occurred while creating the zipfile: "+name+", "+source);
+            throw new LabZipException();
         }catch (IOException e){
-            try{
-                zipfile = generateCanonicalLabZip("https://github.com/exa-coding-labs/",name);
-            }catch (IOException e2){
-                try{
-                    zipfile = generateCanonicalLabZip("https://github.com/tedbeast/",name);
-                }catch (IOException e3){
-                    zipfile = new File(name+".zip");
-                    zipfile.delete();
-                    throw new RuntimeException("gave up trying to clone the lab dont make a zipfile!");
-                }
-
-            }
+            zipfile = new File(name+".zip");
+            zipfile.delete();
+            App.log.warn("an unspecified IOException occurred while creating the zipfile: "+name+", "+source);
+            throw new LabZipException();
         }
-        byte[] zipBytes = Files.readAllBytes(Path.of(zipfile.getPath()));
-        LabCanonical labCanonical = new LabCanonical(name, zipBytes, new Timestamp(System.currentTimeMillis()));
-        return labCanonicalRepository.save(labCanonical);
+        return zipfile;
     }
 
     /**
-     * i repeated myself because i'm a BAD coder and now my flight's in 15 minutes!
+     * process for saving the new lab canonical entity, including transferring the zip to blob
      * @param name
+     * @param commit
+     * @param source
      * @return
      * @throws LabZipException
      * @throws IOException
      * @throws InterruptedException
      */
-    public LabCanonical updateExistingCanonicalLabZip(String name) throws LabZipException, IOException, InterruptedException {
-        File zipfile = null;
-        try{
-            zipfile = generateCanonicalLabZip("https://github.com/exa-coding-labs/",name);
-        }catch (IOException e){
-            try{
-                zipfile = generateCanonicalLabZip("https://github.com/peplabs/",name);
-            }catch (IOException e2){
-                try{
-                    zipfile = generateCanonicalLabZip("https://github.com/tedbeast/",name);
-                }catch (IOException e3){
-                    zipfile = new File(name+".zip");
-                    zipfile.delete();
-                    throw new RuntimeException("gave up trying to clone the lab dont make a zipfile!");
-                }
-
-            }
-        }
-        LabCanonical labCanonical = labCanonicalRepository.findByName(name);
+    public LabCanonical addNewCanonicalLab(String name, String commit, String source) throws LabZipException, IOException, InterruptedException {
+        File zipfile = getZipFromWeb(name, source);
         byte[] zipBytes = Files.readAllBytes(Path.of(zipfile.getPath()));
-        labCanonical.setZip(zipBytes);
-        labCanonical.setLastUpdated(new Timestamp(System.currentTimeMillis()));
+        LabCanonical labCanonical = new LabCanonical(name, zipBytes, commit, source);
         zipfile.delete();
         return labCanonicalRepository.save(labCanonical);
     }
 
     /**
-     * TODO check for the existence of the repo by polling the github repo url
+     * process for updating a lab zip
+     * @param name
+     * @param commit
+     * @param source
      * @return
+     * @throws LabZipException
+     * @throws IOException
+     * @throws InterruptedException
      */
-    public boolean checkForCanonicalLabExistenceRepo(){
-        return true;
+    public LabCanonical updateExistingCanonicalLabZip(String name, String commit, String source) throws LabZipException, IOException, InterruptedException {
+        File zipfile = getZipFromWeb(name, source);
+        LabCanonical labCanonical = labCanonicalRepository.findByName(name);
+        byte[] zipBytes = Files.readAllBytes(Path.of(zipfile.getPath()));
+        labCanonical.setZip(zipBytes);
+        labCanonical.setCommit(commit);
+        zipfile.delete();
+        return labCanonicalRepository.save(labCanonical);
     }
     /**
-     * TODO check for updates to the lab by comparing the last time a lab zip was updated against the most
-     * recent commits on the github repo
-     * for now, just update the lab every dang time.
+     * check for the existence of the repo by polling all github repo urls
      * @return
      */
-    public boolean checkForCanonicalLabUpdate(){
-        return true;
-    }
-    public File generateCanonicalLabZip(String ghorgPrefix, String name) throws IOException, InterruptedException, LabZipException {
-        if(name == null || name.length()<1){
-            throw new LabZipException();
+    public String[] getLatestCanonicalCommit(String name){
+        for(int i = 0; i < WebUtil.baseUrl.length; i++){
+            String commit = checkCanonicalLabSource(WebUtil.baseUrl[i]+name);
+            if(commit!=null){
+                return new String[]{commit, ""+i};
+            }
         }
+        return null;
+    }
+    /**
+     * check for the existence of the repo by polling single github repo url
+     * @return
+     */
+    public String checkCanonicalLabSource(String url){
+        try{
+            String output = cmdService.runCommandReturnOutput("git ls-remote "+url);
+            if(output.length()>1){
+                return output.substring(0, 40);
+            }
+        }catch(Exception e){
+            return null;
+        }
+        return null;
+    }
+    /**
+     * check for updates to the lab by comparing the commit hashes
+     * @return
+     */
+    public boolean checkForCanonicalLabUpdate(LabCanonical labCanonical, String commit){
+        if(labCanonical.equals(commit)==false){
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    /**
+     * clone git repo, convert to zip.
+     */
+    public File generateCanonicalLabZip(String ghorgPrefix, String name) throws IOException, InterruptedException, LabZipException {
         cmdService.runCommandReturnOutput("git clone "+ghorgPrefix+name);
         pack("./"+name, "./"+name+".zip");
         File dir = new File("./"+name);
@@ -152,9 +190,8 @@ public class LabCanonicalService {
         File zip = new File("./"+name+".zip");
         return zip;
     }
-
     /**
-     * zip directory: "i dont wanna play with you any more"
+     * git repo directory: "i dont wanna play with you any more"
      * @param directoryToBeDeleted
      * @return
      */
@@ -167,10 +204,8 @@ public class LabCanonicalService {
         }
         return directoryToBeDeleted.delete();
     }
-
     /**
-     * not sure if it's possible to zip files without creating them
-     * might be cool
+     * package the git repo directory to zip
      * @param sourceDirPath
      * @param zipFilePath
      * @throws IOException

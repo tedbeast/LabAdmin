@@ -22,6 +22,7 @@ public class CMDService {
     public String runCommandReturnOutput(String cmd) throws IOException, InterruptedException {
         App.log.info("running this command: "+cmd);
         Process process = Runtime.getRuntime().exec(cmd);
+        process.waitFor();
         BufferedReader reader =
                 new BufferedReader(new InputStreamReader(process.getInputStream()));
         String result = "";

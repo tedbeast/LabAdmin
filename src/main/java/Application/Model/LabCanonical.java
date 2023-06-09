@@ -22,11 +22,13 @@ public class LabCanonical {
     public String name;
     @Lob
     public byte[] zip;
-    public Timestamp lastUpdated;
+    public String commit;
+    public String source;
 
-    public LabCanonical(String name, byte[] zip, Timestamp lastUpdated) {
+    public LabCanonical(String name, byte[] zip, String commit, String source) {
         this.name = name;
         this.zip = zip;
-        this.lastUpdated = lastUpdated;
+        this.commit = commit;
+        this.source = source;
     }
 }

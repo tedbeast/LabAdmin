@@ -44,10 +44,16 @@ public class LabSavedService {
         if(!authService.validateUser(pkey)){
             throw new UnauthorizedException();
         }
+//        REMOVE THIS LATER!!!
+//        since there is no save functionality yet anyways, just reset the lab every time its requested
+
+
         LabSaved labSaved = labSavedRepository.getSpecificSavedLab(pkey, name);
+
         if (labSaved == null) {
             return addNewSavedLab(pkey, name);
         }else{
+            labSaved = resetLabProgress(pkey, name);
             return labSaved;
         }
     }

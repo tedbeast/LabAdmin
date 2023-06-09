@@ -70,4 +70,20 @@ public class LabController {
     public void handleUnauthorized(){
 
     }
+    /**
+     * for when a lab is unretrievable
+     */
+    @ExceptionHandler(LabRetrievalException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public void handleUnretrievable(){
+
+    }
+    /**
+     * for when a zipping issue occurs
+     */
+    @ExceptionHandler(LabZipException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public void handleUnzippable(){
+
+    }
 }
