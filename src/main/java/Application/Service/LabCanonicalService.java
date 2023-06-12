@@ -26,10 +26,12 @@ import java.util.zip.ZipOutputStream;
 public class LabCanonicalService {
     CMDService cmdService;
     LabCanonicalRepository labCanonicalRepository;
+    BlobService blobService;
     @Autowired
-    public LabCanonicalService(CMDService cmdService, LabCanonicalRepository labCanonicalRepository){
+    public LabCanonicalService(CMDService cmdService, LabCanonicalRepository labCanonicalRepository, BlobService blobService){
         this.cmdService = cmdService;
         this.labCanonicalRepository = labCanonicalRepository;
+        this.blobService = blobService;
     }
 
     /**
@@ -116,6 +118,7 @@ public class LabCanonicalService {
         File zipfile = getZipFromWeb(name, source);
         byte[] zipBytes = Files.readAllBytes(Path.of(zipfile.getPath()));
         LabCanonical labCanonical = new LabCanonical(name, zipBytes, commit, source);
+        blobService.saveCanonicalBlob(name, zipfile);
         zipfile.delete();
         return labCanonicalRepository.save(labCanonical);
     }
