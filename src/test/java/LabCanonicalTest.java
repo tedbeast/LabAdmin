@@ -18,8 +18,8 @@ public class LabCanonicalTest {
 
     @Test
     public void testLabExistencePositive(){
-        Assertions.assertEquals("405ede3f20a452af4f9917c69457c4aac133e0b4",
-                labCanonicalService.getLatestCanonicalCommit("spr-cl-boot")[0]);
+        Assertions.assertEquals("63eee7730d225ffc235e737410a507252faafb90",
+                labCanonicalService.getLatestCanonicalCommit("teds-workspace")[0]);
     }
     @Test
     public void testLabExistenceNegative(){

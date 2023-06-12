@@ -1,8 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: LabCanonicalTest
 -------------------------------------------------------------------------------
-Tests run: 5, Failures: 0, Errors: 1, Skipped: 0, Time elapsed: 6.476 s <<< FAILURE! - in LabCanonicalTest
-testUpdatePollTrue  Time elapsed: 2.166 s  <<< ERROR!
-java.nio.file.NoSuchFileException: .\teds-workspace.zip
-	at LabCanonicalTest.testUpdatePollTrue(LabCanonicalTest.java:30)
-
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 11.089 s - in LabCanonicalTest
