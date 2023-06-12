@@ -8,6 +8,7 @@ import Application.Model.LabCanonical;
 import Application.Repository.LabCanonicalRepository;
 import Application.Util.WebUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -34,6 +35,11 @@ public class LabCanonicalService {
         this.blobService = blobService;
     }
 
+
+    public ByteArrayResource getCanonicalByteArray(String name) throws LabZipException, LabRetrievalException, IOException, InterruptedException {
+        LabCanonical labCanonical = getCanonicalLab(name);
+        return blobService.getCanonicalFromAzure(labCanonical.getName());
+    }
     /**
      * check for brand new labs or lab updates prior to returning the canonical
      * @param name
@@ -137,8 +143,8 @@ public class LabCanonicalService {
         File zipfile = getZipFromWeb(name, source);
         LabCanonical labCanonical = labCanonicalRepository.findByName(name);
         byte[] zipBytes = Files.readAllBytes(Path.of(zipfile.getPath()));
-        labCanonical.setZip(zipBytes);
         labCanonical.setCommit(commit);
+        blobService.saveCanonicalBlob(name, zipfile);
         zipfile.delete();
         return labCanonicalRepository.save(labCanonical);
     }
@@ -175,7 +181,7 @@ public class LabCanonicalService {
      * @return
      */
     public boolean checkForCanonicalLabUpdate(LabCanonical labCanonical, String commit){
-        if(labCanonical.equals(commit)==false){
+        if(labCanonical.getCommit().equals(commit)==false){
             return true;
         }else{
             return false;

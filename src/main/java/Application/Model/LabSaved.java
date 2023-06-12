@@ -19,18 +19,13 @@ public class LabSaved {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     public long id;
-    @Lob
-    public byte[] zip;
     public Timestamp lastUpdated;
-    @ManyToOne
-    @JoinColumn(name = "lab_fk")
-    public LabCanonical canonical;
+//    this has been denormalized because writes will never happen to this value, but it's needed to locate the blob
+    public String name;
     @ManyToOne
     @JoinColumn(name = "pkey_fk")
     public ProductKey productKey;
-
-    public LabSaved(byte[] zip, Timestamp lastUpdated) {
-        this.zip = zip;
+    public LabSaved(Timestamp lastUpdated) {
         this.lastUpdated = lastUpdated;
     }
 }

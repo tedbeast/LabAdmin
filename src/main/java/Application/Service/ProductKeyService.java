@@ -13,12 +13,13 @@ public class ProductKeyService {
      */
     @Autowired
     ProductKeyRepository productKeyRepository;
-    public ProductKey attemptUserKeyGeneration(long key) throws UnauthorizedException {
-        ProductKey productKey = productKeyRepository.findById(key).get();
-        if(productKey.admin == true){
-            ProductKey newKey = new ProductKey((long) (Math.random()*Long.MAX_VALUE), true, false, false);
-            newKey = productKeyRepository.save(newKey);
-            return newKey;
+    public ProductKey attemptUserKeyGeneration(long key, ProductKey newProductKey) throws UnauthorizedException {
+        ProductKey adminProductKey = productKeyRepository.findById(key).get();
+        if(adminProductKey.isAdmin() && adminProductKey.isActive()){
+            newProductKey.setActive(true);
+            newProductKey.setProductKey((long) (Math.random()*Long.MAX_VALUE));
+            newProductKey = productKeyRepository.save(newProductKey);
+            return newProductKey;
         }else{
             throw new UnauthorizedException();
         }
@@ -27,12 +28,14 @@ public class ProductKeyService {
     /**
      * create a new admin key
      */
-    public ProductKey attemptAdminKeyGeneration(long key) throws UnauthorizedException {
-        ProductKey productKey = productKeyRepository.findById(key).get();
-        if(productKey.superAdmin == true){
-            ProductKey newKey = new ProductKey((long) (Math.random()*Long.MAX_VALUE), true, true, false);
-            newKey = productKeyRepository.save(newKey);
-            return newKey;
+    public ProductKey attemptAdminKeyGeneration(long key, ProductKey newProductKey) throws UnauthorizedException {
+        ProductKey adminProductKey = productKeyRepository.findById(key).get();
+        if(adminProductKey.isSuperAdmin() && adminProductKey.isActive()){
+            newProductKey.setBatchId(0);
+            newProductKey.setActive(true);
+            newProductKey.setProductKey((long) (Math.random()*Long.MAX_VALUE));
+            newProductKey = productKeyRepository.save(newProductKey);
+            return newProductKey;
         }else{
             throw new UnauthorizedException();
         }

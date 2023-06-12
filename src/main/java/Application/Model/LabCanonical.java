@@ -20,14 +20,11 @@ public class LabCanonical {
     @GeneratedValue(strategy = GenerationType.AUTO)
     public long id;
     public String name;
-    @Lob
-    public byte[] zip;
     public String commit;
     public String source;
 
     public LabCanonical(String name, byte[] zip, String commit, String source) {
         this.name = name;
-        this.zip = zip;
         this.commit = commit;
         this.source = source;
     }

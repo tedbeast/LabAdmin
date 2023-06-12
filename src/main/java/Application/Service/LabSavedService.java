@@ -9,6 +9,7 @@ import Application.Model.ProductKey;
 import Application.Repository.LabCanonicalRepository;
 import Application.Repository.LabSavedRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -28,46 +29,50 @@ public class LabSavedService {
     LabCanonicalService labCanonicalService;
     LabSavedRepository labSavedRepository;
     AuthService authService;
+    BlobService blobService;
     @Autowired
     public LabSavedService(LabCanonicalService labCanonicalService,
-                           LabSavedRepository labSavedRepository, AuthService authService){
+                           LabSavedRepository labSavedRepository, AuthService authService, BlobService blobService){
         this.labCanonicalService = labCanonicalService;
         this.labSavedRepository = labSavedRepository;
         this.authService = authService;
+        this.blobService = blobService;
     }
 
     /**
      * check if the user's already got an existing lab. if not (when the user starts a new lab for the first time),
      * start the process of copying from the canonical
      */
-    public LabSaved getSavedLab(long pkey, String name) throws UnauthorizedException, LabZipException, IOException, InterruptedException, LabRetrievalException {
+    public ByteArrayResource getSavedLab(long pkey, String name) throws UnauthorizedException, LabZipException, IOException, InterruptedException, LabRetrievalException {
         if(!authService.validateUser(pkey)){
             throw new UnauthorizedException();
         }
+        LabSaved labSaved = labSavedRepository.getSpecificSavedLab(pkey, name);
+        if (labSaved == null) {
+            addNewSavedLab(pkey, name);
+            ByteArrayResource byteArray = blobService.getSavedFromAzure(pkey, name);
+            return byteArray;
+        }else{
 //        REMOVE THIS LATER!!!
 //        since there is no save functionality yet anyways, just reset the lab every time its requested
-
-
-        LabSaved labSaved = labSavedRepository.getSpecificSavedLab(pkey, name);
-
-        if (labSaved == null) {
-            return addNewSavedLab(pkey, name);
-        }else{
-            labSaved = resetLabProgress(pkey, name);
-            return labSaved;
+            resetLabProgress(pkey, name);
+            ByteArrayResource byteArray = blobService.getSavedFromAzure(pkey, name);
+            return byteArray;
         }
     }
 
     /**
      * grab a lab from the canonical set and make it the user's saved lab
      */
-    public LabSaved addNewSavedLab(long pkey, String name) throws LabZipException, IOException, InterruptedException, LabRetrievalException {
-        LabCanonical labCanonical = labCanonicalService.getCanonicalLab(name);
+    public ByteArrayResource addNewSavedLab(long pkey, String name) throws LabZipException, LabRetrievalException, IOException, InterruptedException {
+        labCanonicalService.getCanonicalLab(name);
         ProductKey productKey = authService.getProductKey(pkey);
-        LabSaved labSaved = new LabSaved(labCanonical.getZip(), new Timestamp(System.currentTimeMillis()));
+        LabSaved labSaved = new LabSaved(new Timestamp(System.currentTimeMillis()));
         labSaved.setProductKey(productKey);
-        labSaved.setCanonical(labCanonical);
-        return labSavedRepository.save(labSaved);
+        labSaved.setName(name);
+        byte[] canonicalLabBytes = blobService.getCanonicalFromAzure(name).getByteArray();
+        blobService.saveSavedBlob(pkey, name, canonicalLabBytes);
+        return new ByteArrayResource(canonicalLabBytes);
     }
     /**
      * provided the pkey and lab name, reset the user's lab to canonical
@@ -77,9 +82,10 @@ public class LabSavedService {
         if(!authService.validateUser(pkey)){
             throw new UnauthorizedException();
         }
-        LabCanonical labCanonical = labCanonicalService.getCanonicalLab(name);
+        byte[] labBytes = blobService.getCanonicalFromAzure(name).getByteArray();
+        blobService.saveSavedBlob(pkey, name, labBytes);
         LabSaved labSaved = labSavedRepository.getSpecificSavedLab(pkey, name);
-        labSaved.setZip(labCanonical.getZip());
+        labSaved.setLastUpdated(new Timestamp(System.currentTimeMillis()));
         labSavedRepository.save(labSaved);
         return labSaved;
     }
@@ -88,14 +94,14 @@ public class LabSavedService {
      * to the provided pkey
      * @return
      */
-    public LabSaved saveLabProgress(long pkey, String name, byte[] zip) throws UnauthorizedException {
+    public LabSaved saveLabProgress(long pkey, String name, byte[] labBytes) throws UnauthorizedException {
         if(!authService.validateUser(pkey)){
             throw new UnauthorizedException();
         }
+        blobService.saveSavedBlob(pkey, name, labBytes);
         LabSaved labSaved = labSavedRepository.getSpecificSavedLab(pkey, name);
-        labSaved.setZip(zip);
+        labSaved.setLastUpdated(new Timestamp(System.currentTimeMillis()));
         labSavedRepository.save(labSaved);
         return labSaved;
     }
-
 }

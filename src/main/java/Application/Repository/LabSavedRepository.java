@@ -10,6 +10,6 @@ public interface LabSavedRepository extends JpaRepository<LabSaved, Long> {
 /**     query annotation written to get a specific lab for a specific user.
         apparently, JPA doesn't provide a super convenient way to query by a fkey.....
  **/
-    @Query("select ls from LabSaved ls where ls.productKey.productKey = :pkey and ls.canonical.name = :name")
+    @Query("select ls from LabSaved ls where ls.productKey.productKey = :pkey and ls.name = :name")
     LabSaved getSpecificSavedLab(@Param("pkey") long pkey, @Param("name") String name);
 }

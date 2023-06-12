@@ -3,7 +3,9 @@ package Application.Controller;
 import Application.Exception.LabRetrievalException;
 import Application.Exception.LabZipException;
 import Application.Exception.UnauthorizedException;
+import Application.Model.LabCanonical;
 import Application.Model.LabSaved;
+import Application.Service.LabCanonicalService;
 import Application.Service.LabSavedService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
@@ -17,9 +19,11 @@ import java.io.*;
 @RestController
 public class LabController {
     LabSavedService labSavedService;
+    LabCanonicalService labCanonicalService;
     @Autowired
-    public LabController(LabSavedService labSavedService){
+    public LabController(LabSavedService labSavedService, LabCanonicalService labCanonicalService){
         this.labSavedService = labSavedService;
+        this.labCanonicalService = labCanonicalService;
     }
 
     /**
@@ -34,8 +38,7 @@ public class LabController {
      */
     @GetMapping(value = "/lab/{name}", produces="application/zip")
     public ResponseEntity getSavedLab(@RequestHeader long product_key, @PathVariable String name) throws IOException, InterruptedException, UnauthorizedException, LabZipException, LabRetrievalException {
-        LabSaved labSaved = labSavedService.getSavedLab(product_key, name);
-        ByteArrayResource byteArrayResource = new ByteArrayResource(labSaved.getZip());
+        ByteArrayResource byteArrayResource = labSavedService.getSavedLab(product_key, name);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentLength(byteArrayResource.contentLength());
         return new ResponseEntity(byteArrayResource, headers, HttpStatus.OK);
