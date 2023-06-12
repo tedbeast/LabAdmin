@@ -11,7 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import java.io.File;
 import java.io.IOException;
 
-@SpringBootTest(classes = App.class)
+@SpringBootTest(properties = "spring.main.lazy-initialization=true", classes = {App.class})
 public class LabCanonicalTest {
     @Autowired
     LabCanonicalService labCanonicalService;
