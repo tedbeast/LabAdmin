@@ -77,7 +77,7 @@ public class LabCanonicalService {
                 lab = updateExistingCanonicalLabZip(name, commit, source);
                 return lab;
             }else{
-                App.log.info("loading canonical: "+name+", "+commit+"/"+lab.getCommit()+", "+source);
+                App.log.info("loading canonical: "+name+", "+commit+"/"+lab.getCommitHash()+", "+source);
                 return lab;
             }
         }
@@ -123,7 +123,7 @@ public class LabCanonicalService {
     public LabCanonical addNewCanonicalLab(String name, String commit, String source) throws LabZipException, IOException, InterruptedException {
         File zipfile = getZipFromWeb(name, source);
         byte[] zipBytes = Files.readAllBytes(Path.of(zipfile.getPath()));
-        LabCanonical labCanonical = new LabCanonical(name, zipBytes, commit, source);
+        LabCanonical labCanonical = new LabCanonical(name, commit, source);
         blobService.saveCanonicalBlob(name, zipfile);
         zipfile.delete();
         return labCanonicalRepository.save(labCanonical);
@@ -143,7 +143,7 @@ public class LabCanonicalService {
         File zipfile = getZipFromWeb(name, source);
         LabCanonical labCanonical = labCanonicalRepository.findByName(name);
         byte[] zipBytes = Files.readAllBytes(Path.of(zipfile.getPath()));
-        labCanonical.setCommit(commit);
+        labCanonical.setCommitHash(commit);
         blobService.saveCanonicalBlob(name, zipfile);
         zipfile.delete();
         return labCanonicalRepository.save(labCanonical);
@@ -181,7 +181,7 @@ public class LabCanonicalService {
      * @return
      */
     public boolean checkForCanonicalLabUpdate(LabCanonical labCanonical, String commit){
-        if(labCanonical.getCommit().equals(commit)==false){
+        if(labCanonical.getCommitHash().equals(commit)==false){
             return true;
         }else{
             return false;

@@ -30,7 +30,7 @@ public class LabCanonicalTest {
         LabCanonical labCanonical = labCanonicalService.getCanonicalLab("teds-workspace");
         Assertions.assertNotNull(labCanonical);
         Assertions.assertEquals("teds-workspace", labCanonical.getName());
-        Assertions.assertEquals("63eee7730d225ffc235e737410a507252faafb90", labCanonical.getCommit());
+        Assertions.assertEquals("63eee7730d225ffc235e737410a507252faafb90", labCanonical.getCommitHash());
     }
     /**
      * a labretrievalexception ought to be thrown if the lab does not exist

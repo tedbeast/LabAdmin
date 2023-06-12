@@ -16,11 +16,5 @@ public class App {
     public static Logger log = LogManager.getLogger();
     public static void main(String[] args) throws UnauthorizedException {
         ApplicationContext appContext = SpringApplication.run(App.class);
-        /**
-         * just for testing!! remove this later!!
-         */
-        log.warn("warning- debugging superadmin key not removed!");
-        ProductKeyService productKeyService = appContext.getBean(ProductKeyService.class);
-        productKeyService.superAdminKeyGeneration(7191999L);
     }
 }
