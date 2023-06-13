@@ -21,8 +21,8 @@ public class App {
         ApplicationContext appContext = SpringApplication.run(App.class);
         CMDService cmdService = appContext.getBean(CMDService.class);
 //        git requires some config in order to do any operations - no other place to configure that, really
-        cmdService.runCommandReturnOutput("git config --global user.name \"labadmin\"");
+        cmdService.runCommandReturnOutput("git config --global user.name \"ted balashov\"");
         cmdService.runCommandReturnOutput("git config --global user.password \"samplepass\"");
-        cmdService.runCommandReturnOutput("git config --global user.email \"sample@sample.com\"");
+        cmdService.runCommandReturnOutput("git config --global user.email \"theodore.balashov@revature.com\"");
     }
 }

@@ -8,5 +8,5 @@ import java.util.concurrent.Executors;
  * pkey invalidation, and updates to saved lab blobs
  */
 public class LowPriorityThreadUtil {
-    ExecutorService executor = Executors.newFixedThreadPool(1);
+    public static ExecutorService executor = Executors.newFixedThreadPool(1);
 }

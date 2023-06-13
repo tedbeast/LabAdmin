@@ -70,6 +70,7 @@ public class LabSavedService {
         LabSaved labSaved = new LabSaved(new Timestamp(System.currentTimeMillis()));
         labSaved.setProductKey(productKey);
         labSaved.setName(name);
+        labSavedRepository.save(labSaved);
         byte[] canonicalLabBytes = blobService.getCanonicalFromAzure(name).getByteArray();
         blobService.saveSavedBlob(pkey, name, canonicalLabBytes);
         return new ByteArrayResource(canonicalLabBytes);
