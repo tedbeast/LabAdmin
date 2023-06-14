@@ -25,6 +25,6 @@ public class App {
         cmdService.runCommandReturnOutput("git config --global user.name \"ted balashov\"");
         cmdService.runCommandReturnOutput("git config --global user.password \"samplepass\"");
         cmdService.runCommandReturnOutput("git config --global user.email \"theodore.balashov@revature.com\"");
-        cmdService.runCommandReturnOutput("git config credential.helper '!f() { sleep 1; echo \"username=${GIT_USER}\"; echo \"password=${GIT_PASSWORD};\" }; f'");
+        cmdService.runCommandReturnOutput("git config credential.helper '!f() { sleep 1; echo \"username=tedbalashov\"; echo \"password=sample;\" }; f'");
     }
 }
