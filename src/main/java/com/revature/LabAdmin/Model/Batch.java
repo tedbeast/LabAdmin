@@ -2,9 +2,7 @@ package com.revature.LabAdmin.Model;
 
 import lombok.*;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
+import javax.persistence.*;
 import java.util.List;
 
 @Entity
@@ -15,7 +13,10 @@ import java.util.List;
 @EqualsAndHashCode
 public class Batch {
     @Id
-    long id;
+    private long id;
     @OneToMany
     List<ProductKey> productKeys;
+    @ManyToOne
+    @JoinColumn(name = "curriculaFK")
+    private Curricula curricula;
 }

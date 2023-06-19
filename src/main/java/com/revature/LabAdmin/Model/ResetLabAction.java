@@ -14,5 +14,6 @@ public class ResetLabAction {
     long id;
     Timestamp timestamp;
     @ManyToOne
+    @JoinColumn(name = "labFK")
     LabSaved target;
 }

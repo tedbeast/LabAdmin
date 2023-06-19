@@ -16,5 +16,6 @@ public class SaveLabAction {
     long id;
     Timestamp timestamp;
     @ManyToOne
+    @JoinColumn(name = "labFK")
     LabSaved target;
 }

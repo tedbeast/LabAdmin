@@ -17,5 +17,9 @@ public class InvalidateKeyAction {
     long id;
     Timestamp timestamp;
     @ManyToOne
+    @JoinColumn(name = "keyFK")
     ProductKey target;
+    @ManyToOne
+    @JoinColumn(name = "adminFK")
+    ProductKey createdBy;
 }
