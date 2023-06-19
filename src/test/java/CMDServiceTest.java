@@ -1,5 +1,5 @@
-import Application.App;
-import Application.Service.CMDService;
+import com.revature.LabAdmin.App;
+import com.revature.LabAdmin.Service.CMDService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

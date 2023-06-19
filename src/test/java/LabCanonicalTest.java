@@ -1,8 +1,8 @@
-import Application.App;
-import Application.Exception.LabRetrievalException;
-import Application.Exception.LabZipException;
-import Application.Model.LabCanonical;
-import Application.Service.LabCanonicalService;
+import com.revature.LabAdmin.App;
+import com.revature.LabAdmin.Exception.LabRetrievalException;
+import com.revature.LabAdmin.Exception.LabZipException;
+import com.revature.LabAdmin.Model.LabCanonical;
+import com.revature.LabAdmin.Service.LabCanonicalService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
