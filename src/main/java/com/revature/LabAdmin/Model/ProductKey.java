@@ -20,13 +20,13 @@ import java.util.List;
 @AllArgsConstructor
 public class ProductKey {
     @Id
-    public long productKey;
-    public boolean active;
-    public boolean admin;
-    public boolean superAdmin;
-    public int batchId;
+    private long productKey;
+    private boolean active;
+    private boolean admin;
+    private boolean superAdmin;
+    private int batchId;
 //    might use this later
-    public String name;
+    private String name;
 //    might develop some way to give a productkey access only to some lab canonicals, or assgn canonicals
 //    to a unit and provide access to a unit.
 

@@ -11,9 +11,9 @@ import java.sql.Timestamp;
 public class ResetLabAction {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    long id;
-    Timestamp timestamp;
+    private long id;
+    private Timestamp timestamp;
     @ManyToOne
     @JoinColumn(name = "labFK")
-    LabSaved target;
+    private LabSaved target;
 }

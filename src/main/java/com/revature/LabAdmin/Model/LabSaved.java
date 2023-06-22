@@ -17,13 +17,13 @@ import java.sql.Timestamp;
 public class LabSaved {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    public long id;
-    public Timestamp lastUpdated;
+    private long id;
+    private Timestamp lastUpdated;
 //    this has been denormalized because writes will never happen to this value, but it's needed to locate the blob
-    public String name;
+    private String name;
     @ManyToOne
     @JoinColumn(name = "pkey_fk")
-    public ProductKey productKey;
+    private ProductKey productKey;
     public LabSaved(Timestamp lastUpdated) {
         this.lastUpdated = lastUpdated;
     }

@@ -16,6 +16,6 @@ import javax.persistence.Id;
 public class BaseURL {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    long id;
-    String url;
+    private long id;
+    private String url;
 }

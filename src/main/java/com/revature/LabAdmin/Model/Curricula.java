@@ -14,5 +14,5 @@ import javax.persistence.Id;
 public class Curricula {
     @Id
     private long id;
-    String name;
+    private String name;
 }

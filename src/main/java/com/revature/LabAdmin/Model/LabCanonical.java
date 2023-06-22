@@ -16,10 +16,10 @@ import javax.persistence.*;
 public class LabCanonical {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    public long id;
-    public String name;
-    public String commitHash;
-    public String source;
+    private long id;
+    private String name;
+    private String commitHash;
+    private String source;
 
     public LabCanonical(String name, String commitHash, String source) {
         this.name = name;

@@ -14,12 +14,12 @@ import java.sql.Timestamp;
 public class InvalidateKeyAction {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    long id;
-    Timestamp timestamp;
+    private long id;
+    private Timestamp timestamp;
     @ManyToOne
     @JoinColumn(name = "keyFK")
-    ProductKey target;
+    private ProductKey target;
     @ManyToOne
     @JoinColumn(name = "adminFK")
-    ProductKey createdBy;
+    private ProductKey createdBy;
 }
